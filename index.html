@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Assistant Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --dark-blue: #1A1F2F;
+            --dark-purple: #2A2356;
+            --white: #FFFFFF;
+            --accent: #3F325C;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui;
+        }
+
+        body {
+            background: var(--dark-blue);
+            color: var(--white);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--dark-purple) 100%);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 1.2rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .ai-bubble {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--dark-purple);
+            border-left: 4px solid var(--accent);
+        }
+
+        .user-bubble {
+            background: var(--dark-purple);
+            border: 1px solid var(--accent);
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--accent);
+        }
+
+        .input-area {
+            background: var(--dark-purple);
+            padding: 1.5rem;
+            border-top: 1px solid var(--accent);
+        }
+
+        .input-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--white);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .file-btn {
+            color: var(--white);
+            padding: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-btn:hover {
+            background: blue;
+            transform: translateY(-1.5px);
+        }
+
+        .send-btn {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background: blue;
+            transform: translateY(-1.5px);
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border: 2px solid var(--accent);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 1rem;
+            }
+            
+            .message-bubble {
+                max-width: 90%;
+                padding: 1rem;
+            }
+            
+            .avatar {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .send-btn {
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>Study Assistant Pro</h1>
+    </header>
+
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-message">
+            <div class="avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-bubble ai-bubble">
+                <div class="message-content">
+                    Welcome! How can I assist with your studies today?
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-container">
+            <input type="text" class="message-input" placeholder="Ask your academic question..." id="messageInput">
+            <div class="action-group">
+                <label class="file-btn">
+                    <input type="file" id="fileInput" hidden accept="image/*, .pdf">
+                    <i class="fas fa-paperclip"></i>
+                </label>
+                <button class="send-btn" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCgSiQNovEozbjmkbIp4_x_ubX24nzgDSk";
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const fileInput = document.getElementById('fileInput');
+        let currentFile = null;
+
+        async function handleSend() {
+            const message = messageInput.value.trim();
+            if (!message && !currentFile) return;
+
+            addMessage(message, true);
+            const loadingMsg = addMessage('<div class="loading"></div>');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: message },
+                                ...(currentFile ? [{
+                                    inline_data: {
+                                        mime_type: currentFile.type,
+                                        data: await toBase64(currentFile)
+                                    }
+                                }] : [])
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const responseText = data.candidates[0].content.parts[0].text;
+                loadingMsg.querySelector('.message-content').innerHTML = 
+                    responseText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            } catch (error) {
+                loadingMsg.querySelector('.message-content').innerHTML = 
+                    '⚠️ Error processing request. Please try again.';
+            } finally {
+                messageInput.value = '';
+                currentFile = null;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user-message' : ''}`;
+            
+            let fileContent = '';
+            if (isUser && currentFile) {
+                if (currentFile.type.startsWith('image/')) {
+                    fileContent = `<img src="${URL.createObjectURL(currentFile)}" class="uploaded-image" alt="Uploaded content">`;
+                } else {
+                    fileContent = `<div class="file-preview"><i class="fas fa-file-pdf"></i> ${currentFile.name}</div>`;
+                }
+            }
+
+            messageDiv.innerHTML = `
+                <div class="avatar">
+                    <i class="fas ${isUser ? 'fa-user-graduate' : 'fa-robot'}"></i>
+                </div>
+                <div class="message-bubble ${isUser ? 'user-bubble' : 'ai-bubble'}">
+                    <div class="message-content">${content}${fileContent}</div>
+                </div>
+            `;
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageDiv;
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            currentFile = e.target.files[0];
+            if (currentFile) messageInput.value = `📎 ${currentFile.name}`;
+        });
+
+        sendButton.addEventListener('click', handleSend);
+        messageInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleSend());
+    </script>
+</body>
+</html>
